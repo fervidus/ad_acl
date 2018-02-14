@@ -1,0 +1,32 @@
+{
+  "name": "autostructure-audit_rules",
+  "version": "0.1.0",
+  "author": "Bryan Belanger",
+  "summary": "Manage active directory audit rules.",
+  "license": "Apache-2.0",
+  "source": "https://github.com/autostructure/audit_rules.git",
+  "project_page": "https://github.com/autostructure/audit_rules.git",
+  "issues_url": "https://github.com/autostructure/audit_rules.git/issues",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "windows",
+      "operatingsystemrelease": [
+        "2008 R2",
+        "2012 R2",
+        "10"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.7.0 < 6.0.0"
+    }
+  ],
+  "pdk-version": "1.3.2",
+  "template-url": "file:///opt/puppetlabs/pdk/share/cache/pdk-templates.git",
+  "template-ref": "1.3.2-0-g07678c8"
+}
