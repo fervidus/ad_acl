@@ -1,41 +1,131 @@
 Puppet::Type.newtype(:ad_acl) do
   desc 'Manages the access control lists for an Active Directory controller'
 
-  ensurable
+  # ensurable
 
-  newparam(:path, namevar: true) do
+  newparam(:name, namevar: true) do
     desc 'The path to the object on the active directory server'
 
-    munge do |value|
-      value.downcase
-    end
+    munge(&:downcase)
 
     def insync?(is)
       is.casecmp(should.downcase).zero?
     end
   end
 
-  newproperty(:user) do
+  newproperty(:owner) do
     desc 'The user associated with this access control list'
+
+    def insync?(is)
+      is.casecmp(should.downcase).zero?
+    end
   end
 
   newproperty(:group) do
     desc 'The group associated with this access control list'
+
+    def insync?(is)
+      is.casecmp(should.downcase).zero?
+    end
   end
 
   newproperty(:audit_rules, array_matching: :all) do
     desc 'Audit rules associated with this acl'
 
+    munge do |value|
+      value['object_type'] = '00000000-0000-0000-0000-000000000000' unless value['object_type']
+      value['inherited_object_type'] = '00000000-0000-0000-0000-000000000000' unless value['inherited_object_type']
+      value
+    end
+
     def insync?(is)
-      is.sort == should.sort
+      is_sort = is.sort do |a, b|
+        [
+          a['identity'],
+          a['ad_rights'],
+          a['audit_flags'],
+          a['object_type'],
+          b['inherited_object_type'],
+          a['inheritance_type'],
+        ] <=> [
+          b['identity'],
+          b['ad_rights'],
+          b['audit_flags'],
+          b['object_type'],
+          b['inherited_object_type'],
+          b['inheritance_type'],
+        ]
+      end
+
+      should_sort = should.sort do |a, b|
+        [
+          a['identity'],
+          a['ad_rights'],
+          a['audit_flags'],
+          a['object_type'],
+          a['inherited_object_type'],
+          a['inheritance_type'],
+        ] <=> [
+          b['identity'],
+          b['ad_rights'],
+          b['audit_flags'],
+          b['object_type'],
+          b['inherited_object_type'],
+          b['inheritance_type'],
+        ]
+      end
+
+      is_sort == should_sort
     end
   end
 
   newproperty(:access_rules, array_matching: :all) do
     desc 'Access rules associated with this acl'
 
+    munge do |value|
+      value['object_type'] = '00000000-0000-0000-0000-000000000000' unless value['object_type']
+      value['inherited_object_type'] = '00000000-0000-0000-0000-000000000000' unless value['inherited_object_type']
+      value
+    end
+
     def insync?(is)
-      is.sort == should.sort
+      is_sort = is.sort do |a, b|
+        [
+          a['identity'],
+          a['ad_rights'],
+          a['access_control_type'],
+          a['object_type'],
+          a['inherited_object_type'],
+          a['inheritance_type'],
+        ] <=> [
+          b['identity'],
+          b['ad_rights'],
+          b['access_control_type'],
+          b['object_type'],
+          b['inherited_object_type'],
+          b['inheritance_type'],
+        ]
+      end
+
+      should_sort = should.sort do |a, b|
+        [
+          a['identity'],
+          a['ad_rights'],
+          a['access_control_type'],
+          a['object_type'],
+          a['inherited_object_type'],
+          a['inheritance_type'],
+        ] <=> [
+          b['identity'],
+          b['ad_rights'],
+          b['access_control_type'],
+          b['object_type'],
+          b['inherited_object_type'],
+          b['inheritance_type'],
+        ]
+      end
+
+      is_sort == should_sort
     end
   end
 end

@@ -23,11 +23,104 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     @property_flush = {}
   end
 
+  def access_rules=(value)
+    @property_flush[:access_rules] = value
+  end
+
+  def audit_rules=(value)
+    @property_flush[:audit_rules] = value
+  end
+
+  def set_access_rule(access_rule)
+    # puts audit_rule
+    ad_rights = access_rule['ad_rights'].to_s.split(%r{,\s*})
+
+    ad_build = ''
+
+    ad_rights.each do |ad_right|
+      ad_build << "$ActiveDirectoryRightsArray += [System.DirectoryServices.ActiveDirectoryRights]::#{ad_right}\n"
+    end
+
+    <<~HEREDOC
+
+$ActiveDirectoryRightsArray = @()
+
+#{ad_build}
+
+$objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
+
+$objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+
+$AccessRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
+  $ActiveDirectoryRightsArray,
+  [System.Security.AccessControl.AccessControlType]::$AccessControlType,
+  $objectGuidObj,
+  [System.DirectoryServices.ActiveDirectorySecurityInheritance]::$ActiveDirectorySecurityInheritance,
+  $inheritedObjectGuidObj)
+
+$my_acl.AddAccessRule($AccessRule)
+HEREDOC
+  end
+
+  def set_audit_rule(audit_rule)
+    # puts audit_rule
+    ad_rights = audit_rule['ad_rights'].to_s.split(%r{,\s*})
+
+    ad_build = ''
+
+    ad_rights.each do |ad_right|
+      ad_build << "$ActiveDirectoryRightsArray += [System.DirectoryServices.ActiveDirectoryRights]::#{ad_right}\n"
+    end
+
+    <<~HEREDOC
+
+$ActiveDirectoryRightsArray = @()
+
+#{ad_build}
+
+$objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
+
+$objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+
+$AuditRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
+  $ActiveDirectoryRightsArray,
+  [System.Security.AccessControl.AuditFlags]::#{audit_rule['audit_flags']},
+  [System.DirectoryServices.ActiveDirectorySecurityInheritance]::#{audit_rule['inheritance_type']})
+
+$my_acl.AddAuditRule($AuditRule)
+HEREDOC
+  end
+
+  def set_rules(rules, rule_type)
+    rule_builder = ''
+
+    rules.each do |audit_rule|
+      rule_builder << set_audit_rule(audit_rule) if rule_type == 'audit'
+      rule_builder << set_access_rule(audit_rule) if rule_type == 'access'
+    end
+
+    <<~HEREDOC
+
+Import-Module ActiveDirectory
+
+$my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}"
+
+#{rule_builder}
+
+Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}" -AclObject $my_acl
+HEREDOC
+  end
+
   def set_acl
-    if @property_flush[:ensure] == :absent
-      ps('Get-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/$Obj" |
-          Set-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/$Obj" ')
-      nil
+    if @property_flush[:group]
+    end
+    if @property_flush[:owner]
+    end
+    if @property_flush[:access_rules]
+      ps(set_rules(@property_flush[:access_rules], 'access'))
+    end
+    if @property_flush[:audit_rules]
+      ps(set_rules(@property_flush[:audit_rules], 'audit'))
     end
   end
 
@@ -41,12 +134,9 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
   def self.prefetch(resources)
     instances.each do |provider|
-      is_provider = resources[provider.name]
+      resource = resources[provider.name]
 
-      if is_provider
-        resource = resources[provider.name]
-        resource.provider = provider
-      end
+      resource.provider = provider if resource
     end
   end
 
@@ -67,7 +157,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
       object.xpath("./Property[@Name='Audit']/Property").each do |audit|
         audit_rule = {}
 
-        next unless audit.xpath("./Property[@Name='ActiveDirectoryRights']").text != ''
+        next if (audit.xpath("./Property[@Name='ActiveDirectoryRights']").text == '') || (audit.xpath("./Property[@Name='IsInherited']").text == 'True')
         audit_rule['ad_rights'] = audit.xpath("./Property[@Name='ActiveDirectoryRights']").text
         audit_rule['identity'] = audit.xpath("./Property[@Name='IdentityReference']").text
         audit_rule['audit_flags'] = audit.xpath("./Property[@Name='AuditFlags']").text
@@ -83,10 +173,10 @@ Puppet::Type.type(:ad_acl).provide(:default) do
       object.xpath("./Property[@Name='Access']/Property").each do |access|
         access_rule = {}
 
-        next unless access.xpath("./Property[@Name='ActiveDirectoryRights']").text != ''
+        next if (access.xpath("./Property[@Name='ActiveDirectoryRights']").text == '') || (access.xpath("./Property[@Name='IsInherited']").text == 'True')
         access_rule['identity'] = access.xpath("./Property[@Name='IdentityReference']").text
         access_rule['ad_rights'] = access.xpath("./Property[@Name='ActiveDirectoryRights']").text
-        access_rule['type'] = access.xpath("./Property[@Name='AccessControlType']").text
+        access_rule['access_control_type'] = access.xpath("./Property[@Name='AccessControlType']").text
         access_rule['object_type'] = access.xpath("./Property[@Name='ObjectType']").text
         access_rule['inheritance_type'] = access.xpath("./Property[@Name='InheritanceType']").text
         access_rule['inherited_object_type'] = access.xpath("./Property[@Name='InheritedObjectType']").text
@@ -96,11 +186,11 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
       # put name and state into a hash
       acl_hash = {
-        name: name,
+        name: name.downcase,
         owner: owner,
         group: group,
-        access_rules: access_rules.sort_by { |hsh| hsh[:identity] },
-        audit_rules: audit_rules.sort_by { |hsh| hsh[:identity] },
+        access_rules: access_rules,
+        audit_rules: audit_rules
       }
 
       # push hash to feature array
@@ -111,13 +201,13 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.get_acl(name)
-    result = ps("Get-Acl -Path 'Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/#{name}' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
+    result = ps("Import-Module ActiveDirectory; Get-Acl -Path 'Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{name}' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
 
     process_acl_xml(result)[0]
   end
 
   def self.instances
-    result = ps('Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj | ForEach {
+    result = ps('Get-ADObject -Filter * -SearchBase "cn=system,dc=autostructure,dc=io" -SearchScope 2 -PipelineVariable Obj | ForEach {
                    Get-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/$Obj" -Audit
                  } | ConvertTo-XML -As String -Depth 2 -NoTypeInformation')
 
