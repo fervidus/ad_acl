@@ -121,11 +121,11 @@ HEREDOC
     $ad_object = Get-ADDomain
     $ad_object_length = $ad_object.DistinguishedName.Length
 
-    $my_acl = Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj | ForEach {
-                Get-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/$Obj" -Audit | ForEach {
+    $my_acl = Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj -SearchBase "CN=System,$ad_object" -Properties "DistinguishedName" | ForEach {
+                Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/$Obj" -Audit  -PipelineVariable Acl | ForEach {
                   $audits = @()
 
-                  $_.Audit | ForEach {
+                  $Acl.Audit | ForEach {
                     If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
                       $audits += $_
                     }
@@ -133,21 +133,23 @@ HEREDOC
 
                   $access = @()
 
-                  $_.Access | ForEach {
+                  $Acl.Access | ForEach {
                     If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
                       $access += $_
                     }
                   }
 
                   [pscustomobject]@{
-                    Path=$_.Path.Substring(64, $_.Path.Length - ($ad_object_length + 65))
-                    Group=$_.Group;
-                    Owner=$_.Owner;
+                    Path= $Acl.Path.Substring(64, $Acl.Path.Length - ($ad_object_length + 65))
+                    Group=$Acl.Group;
+                    Owner=$Acl.Owner;
                     Audit = $audits;
                     Access = $access
                   }
                 }
               }  | ConvertTo-XML -As String -Depth 2 -NoTypeInformation
+
+              Write-Host $my_acl
 HEREDOC
   end
 
@@ -247,7 +249,8 @@ HEREDOC
   end
 
   def self.instances
-    result = ps(ad_result_query())
+    query = ad_result_query()
+    result = ps(query)
 
     acls = process_acl_xml(result)
 
