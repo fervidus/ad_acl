@@ -103,11 +103,13 @@ HEREDOC
 
 Import-Module ActiveDirectory
 
-$my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}"
+$ad_object = Get-ADDomain
+
+$my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object"
 
 #{rule_builder}
 
-Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}" -AclObject $my_acl
+Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object" -AclObject $my_acl
 HEREDOC
   end
 
@@ -201,13 +203,13 @@ HEREDOC
   end
 
   def self.get_acl(name)
-    result = ps("Import-Module ActiveDirectory; Get-Acl -Path 'Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{name}' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
+    result = ps("Import-Module ActiveDirectory; $ad_object = Get-ADDomain; Get-Acl -Path 'Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{name},$ad_object' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
 
     process_acl_xml(result)[0]
   end
 
   def self.instances
-    result = ps('Get-ADObject -Filter * -SearchBase "cn=system,dc=autostructure,dc=io" -SearchScope 2 -PipelineVariable Obj | ForEach {
+    result = ps('Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj | ForEach {
                    Get-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/$Obj" -Audit
                  } | ConvertTo-XML -As String -Depth 2 -NoTypeInformation')
 
