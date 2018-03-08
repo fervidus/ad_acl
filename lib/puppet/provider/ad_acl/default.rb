@@ -113,6 +113,42 @@ Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/
 HEREDOC
   end
 
+  def ad_result_query()
+    <<~HEREDOC
+
+    Import-Module ActiveDirectory
+
+    $ad_object = Get-ADDomain
+    $ad_object_length = $ad_object.DistinguishedName.Length
+
+    $my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/CN=rid manager$,CN=system,$ad_object" -Audit | ForEach {
+                $audits = @()
+
+                $_.Audit | ForEach {
+                  If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
+                    $audits += $_
+                  }
+                }
+
+                $access = @()
+
+                $_.Access | ForEach {
+                  If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
+                    $access += $_
+                  }
+                }
+
+                [pscustomobject]@{
+                  Path=$_.Path.Substring(64, $_.Path.Length - ($ad_object_length + 65))
+                  Group=$_.Group;
+                  Owner=$_.Owner;
+                  Audit = $audits;
+                  Access = $access
+                }
+              }  | ConvertTo-XML -As String -Depth 2 -NoTypeInformation
+HEREDOC
+  end
+
   def set_acl
     if @property_flush[:group]
     end
@@ -209,9 +245,7 @@ HEREDOC
   end
 
   def self.instances
-    result = ps('Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj | ForEach {
-                   Get-Acl -Path "Microsoft.ActiveDirectory.Management\ActiveDirectory:://RootDSE/$Obj" -Audit
-                 } | ConvertTo-XML -As String -Depth 2 -NoTypeInformation')
+    result = ps(ad_result_query())
 
     acls = process_acl_xml(result)
 
