@@ -102,14 +102,12 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     <<-HEREDOC
 
       Import-Module ActiveDirectory
-
-      $ad_object = Get-ADDomain
-
-      $my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object"
+      
+      $my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}"
 
       #{rule_builder}
 
-      Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object" -AclObject $my_acl
+      Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}" -AclObject $my_acl
     HEREDOC
   end
 
