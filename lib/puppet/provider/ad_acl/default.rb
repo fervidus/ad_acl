@@ -44,20 +44,20 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     <<-HEREDOC
 
       $ActiveDirectoryRightsArray = @()
-      
+
       #{ad_build}
-      
+
       $objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
-      
+
       $objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
-      
+
       $AccessRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
         $ActiveDirectoryRightsArray,
         [System.Security.AccessControl.AccessControlType]::$AccessControlType,
         $objectGuidObj,
         [System.DirectoryServices.ActiveDirectorySecurityInheritance]::$ActiveDirectorySecurityInheritance,
         $inheritedObjectGuidObj)
-      
+
       $my_acl.AddAccessRule($AccessRule)
     HEREDOC
   end
@@ -118,15 +118,12 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
       Import-Module ActiveDirectory
 
-      $ad_object = Get-ADDomain
-      $ad_object_length = $ad_object.DistinguishedName.Length
-
-      $my_acl = Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj -SearchBase "CN=System,$ad_object" -Properties "DistinguishedName" | ForEach {
+      $my_acl = Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj -Properties "DistinguishedName" | ForEach {
                   Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/$Obj" -Audit  -PipelineVariable Acl | ForEach {
                     $audits = @()
 
                     $Acl.Audit | ForEach {
-                      If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
+                      If ($_.IsInherited -eq $false -And $_.ObjectType -eq '00000000-0000-0000-0000-000000000000' -And $_.InheritedObjectType -eq '00000000-0000-0000-0000-000000000000') {
                         $audits += $_
                       }
                     }
@@ -134,20 +131,20 @@ Puppet::Type.type(:ad_acl).provide(:default) do
                     $access = @()
 
                     $Acl.Access | ForEach {
-                      If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
+                      If ($_.IsInherited -eq $false -And $_.ObjectType -eq '00000000-0000-0000-0000-000000000000' -And $_.InheritedObjectType -eq '00000000-0000-0000-0000-000000000000') {
                         $access += $_
                       }
                     }
 
                     [pscustomobject]@{
-                      Path= $Acl.Path.Substring(64, $Acl.Path.Length - ($ad_object_length + 65))
+                      Path= $Acl.Path
                       Group=$Acl.Group;
                       Owner=$Acl.Owner;
                       Audit = $audits;
                       Access = $access
                     }
                   }
-                }  | ConvertTo-XML -As String -Depth 2 -NoTypeInformation
+                }  | ConvertTo-XML -As String -Depth 2
 
       Write-Host $my_acl
     HEREDOC
@@ -204,8 +201,8 @@ Puppet::Type.type(:ad_acl).provide(:default) do
         audit_rule['identity'] = audit.xpath("./Property[@Name='IdentityReference']").text
         audit_rule['audit_flags'] = audit.xpath("./Property[@Name='AuditFlags']").text
         audit_rule['inheritance_type'] = audit.xpath("./Property[@Name='InheritanceType']").text
-        audit_rule['object_type'] = audit.xpath("./Property[@Name='ObjectType']").text
-        audit_rule['inherited_object_type'] = audit.xpath("./Property[@Name='InheritedObjectType']").text
+        # audit_rule['object_type'] = audit.xpath("./Property[@Name='ObjectType']").text
+        # audit_rule['inherited_object_type'] = audit.xpath("./Property[@Name='InheritedObjectType']").text
 
         audit_rules << audit_rule
       end
@@ -219,9 +216,9 @@ Puppet::Type.type(:ad_acl).provide(:default) do
         access_rule['identity'] = access.xpath("./Property[@Name='IdentityReference']").text
         access_rule['ad_rights'] = access.xpath("./Property[@Name='ActiveDirectoryRights']").text
         access_rule['access_control_type'] = access.xpath("./Property[@Name='AccessControlType']").text
-        access_rule['object_type'] = access.xpath("./Property[@Name='ObjectType']").text
+        # access_rule['object_type'] = access.xpath("./Property[@Name='ObjectType']").text
         access_rule['inheritance_type'] = access.xpath("./Property[@Name='InheritanceType']").text
-        access_rule['inherited_object_type'] = access.xpath("./Property[@Name='InheritedObjectType']").text
+        # access_rule['inherited_object_type'] = access.xpath("./Property[@Name='InheritedObjectType']").text
 
         access_rules << access_rule
       end
@@ -243,7 +240,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.get_acl(name)
-    result = ps("Import-Module ActiveDirectory; $ad_object = Get-ADDomain; Get-Acl -Path 'Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{name},$ad_object' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
+    result = ps("Import-Module ActiveDirectory; Get-Acl -Path 'Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{name}' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
 
     process_acl_xml(result)[0]
   end

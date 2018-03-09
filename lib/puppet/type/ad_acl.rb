@@ -32,11 +32,11 @@ Puppet::Type.newtype(:ad_acl) do
   newproperty(:audit_rules, array_matching: :all) do
     desc 'Audit rules associated with this acl'
 
-    munge do |value|
-      value['object_type'] = '00000000-0000-0000-0000-000000000000' unless value['object_type']
-      value['inherited_object_type'] = '00000000-0000-0000-0000-000000000000' unless value['inherited_object_type']
-      value
-    end
+    # munge do |value|
+    #   value['object_type'] = '00000000-0000-0000-0000-000000000000' unless value['object_type']
+    #   value['inherited_object_type'] = '00000000-0000-0000-0000-000000000000' unless value['inherited_object_type']
+    #   value
+    # end
 
     def insync?(is)
       is_sort = is.sort do |a, b|
@@ -44,15 +44,15 @@ Puppet::Type.newtype(:ad_acl) do
           a['identity'],
           a['ad_rights'],
           a['audit_flags'],
-          a['object_type'],
-          b['inherited_object_type'],
+          # a['object_type'],
+          # a['inherited_object_type'],
           a['inheritance_type'],
         ] <=> [
           b['identity'],
           b['ad_rights'],
           b['audit_flags'],
-          b['object_type'],
-          b['inherited_object_type'],
+          # b['object_type'],
+          # b['inherited_object_type'],
           b['inheritance_type'],
         ]
       end
@@ -62,15 +62,15 @@ Puppet::Type.newtype(:ad_acl) do
           a['identity'],
           a['ad_rights'],
           a['audit_flags'],
-          a['object_type'],
-          a['inherited_object_type'],
+          # a['object_type'],
+          # a['inherited_object_type'],
           a['inheritance_type'],
         ] <=> [
           b['identity'],
           b['ad_rights'],
           b['audit_flags'],
-          b['object_type'],
-          b['inherited_object_type'],
+          # b['object_type'],
+          # b['inherited_object_type'],
           b['inheritance_type'],
         ]
       end
@@ -82,11 +82,11 @@ Puppet::Type.newtype(:ad_acl) do
   newproperty(:access_rules, array_matching: :all) do
     desc 'Access rules associated with this acl'
 
-    munge do |value|
-      value['object_type'] = '00000000-0000-0000-0000-000000000000' unless value['object_type']
-      value['inherited_object_type'] = '00000000-0000-0000-0000-000000000000' unless value['inherited_object_type']
-      value
-    end
+    # munge do |value|
+    #   value['object_type'] = '00000000-0000-0000-0000-000000000000' unless value['object_type']
+    #   value['inherited_object_type'] = '00000000-0000-0000-0000-000000000000' unless value['inherited_object_type']
+    #   value
+    # end
 
     def insync?(is)
       is_sort = is.sort do |a, b|
@@ -94,15 +94,15 @@ Puppet::Type.newtype(:ad_acl) do
           a['identity'],
           a['ad_rights'],
           a['access_control_type'],
-          a['object_type'],
-          a['inherited_object_type'],
+          # a['object_type'],
+          # a['inherited_object_type'],
           a['inheritance_type'],
         ] <=> [
           b['identity'],
           b['ad_rights'],
           b['access_control_type'],
-          b['object_type'],
-          b['inherited_object_type'],
+          # b['object_type'],
+          # b['inherited_object_type'],
           b['inheritance_type'],
         ]
       end
@@ -112,15 +112,15 @@ Puppet::Type.newtype(:ad_acl) do
           a['identity'],
           a['ad_rights'],
           a['access_control_type'],
-          a['object_type'],
-          a['inherited_object_type'],
+          # a['object_type'],
+          # a['inherited_object_type'],
           a['inheritance_type'],
         ] <=> [
           b['identity'],
           b['ad_rights'],
           b['access_control_type'],
-          b['object_type'],
-          b['inherited_object_type'],
+          # b['object_type'],
+          # b['inherited_object_type'],
           b['inheritance_type'],
         ]
       end
