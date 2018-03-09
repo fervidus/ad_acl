@@ -102,7 +102,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     <<-HEREDOC
 
       Import-Module ActiveDirectory
-      
+
       $my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]}"
 
       #{rule_builder}
@@ -111,7 +111,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     HEREDOC
   end
 
-  def self.ad_result_query()
+  def self.ad_result_query
     <<-HEREDOC
 
       Import-Module ActiveDirectory
@@ -227,7 +227,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
         owner: owner,
         group: group,
         access_rules: access_rules,
-        audit_rules: audit_rules
+        audit_rules: audit_rules,
       }
 
       # push hash to feature array
@@ -244,7 +244,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.instances
-    query = ad_result_query()
+    query = ad_result_query
     result = ps(query)
 
     acls = process_acl_xml(result)
