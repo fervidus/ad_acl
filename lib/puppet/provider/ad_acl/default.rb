@@ -41,25 +41,25 @@ Puppet::Type.type(:ad_acl).provide(:default) do
       ad_build << "$ActiveDirectoryRightsArray += [System.DirectoryServices.ActiveDirectoryRights]::#{ad_right}\n"
     end
 
-    <<~HEREDOC
+    <<-HEREDOC
 
-$ActiveDirectoryRightsArray = @()
-
-#{ad_build}
-
-$objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
-
-$objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
-
-$AccessRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
-  $ActiveDirectoryRightsArray,
-  [System.Security.AccessControl.AccessControlType]::$AccessControlType,
-  $objectGuidObj,
-  [System.DirectoryServices.ActiveDirectorySecurityInheritance]::$ActiveDirectorySecurityInheritance,
-  $inheritedObjectGuidObj)
-
-$my_acl.AddAccessRule($AccessRule)
-HEREDOC
+      $ActiveDirectoryRightsArray = @()
+      
+      #{ad_build}
+      
+      $objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
+      
+      $objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+      
+      $AccessRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
+        $ActiveDirectoryRightsArray,
+        [System.Security.AccessControl.AccessControlType]::$AccessControlType,
+        $objectGuidObj,
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::$ActiveDirectorySecurityInheritance,
+        $inheritedObjectGuidObj)
+      
+      $my_acl.AddAccessRule($AccessRule)
+    HEREDOC
   end
 
   def set_audit_rule(audit_rule)
@@ -72,23 +72,23 @@ HEREDOC
       ad_build << "$ActiveDirectoryRightsArray += [System.DirectoryServices.ActiveDirectoryRights]::#{ad_right}\n"
     end
 
-    <<~HEREDOC
+    <<-HEREDOC
 
-$ActiveDirectoryRightsArray = @()
+      $ActiveDirectoryRightsArray = @()
 
-#{ad_build}
+      #{ad_build}
 
-$objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
+      $objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
 
-$objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+      $objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
 
-$AuditRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
-  $ActiveDirectoryRightsArray,
-  [System.Security.AccessControl.AuditFlags]::#{audit_rule['audit_flags']},
-  [System.DirectoryServices.ActiveDirectorySecurityInheritance]::#{audit_rule['inheritance_type']})
+      $AuditRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
+        $ActiveDirectoryRightsArray,
+        [System.Security.AccessControl.AuditFlags]::#{audit_rule['audit_flags']},
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::#{audit_rule['inheritance_type']})
 
-$my_acl.AddAuditRule($AuditRule)
-HEREDOC
+      $my_acl.AddAuditRule($AuditRule)
+    HEREDOC
   end
 
   def set_rules(rules, rule_type)
@@ -99,58 +99,58 @@ HEREDOC
       rule_builder << set_access_rule(audit_rule) if rule_type == 'access'
     end
 
-    <<~HEREDOC
+    <<-HEREDOC
 
-Import-Module ActiveDirectory
+      Import-Module ActiveDirectory
 
-$ad_object = Get-ADDomain
+      $ad_object = Get-ADDomain
 
-$my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object"
+      $my_acl = Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object"
 
-#{rule_builder}
+      #{rule_builder}
 
-Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object" -AclObject $my_acl
-HEREDOC
+      Set-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{resource[:name]},$ad_object" -AclObject $my_acl
+    HEREDOC
   end
 
   def self.ad_result_query()
-    <<~HEREDOC
+    <<-HEREDOC
 
-    Import-Module ActiveDirectory
+      Import-Module ActiveDirectory
 
-    $ad_object = Get-ADDomain
-    $ad_object_length = $ad_object.DistinguishedName.Length
+      $ad_object = Get-ADDomain
+      $ad_object_length = $ad_object.DistinguishedName.Length
 
-    $my_acl = Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj -SearchBase "CN=System,$ad_object" -Properties "DistinguishedName" | ForEach {
-                Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/$Obj" -Audit  -PipelineVariable Acl | ForEach {
-                  $audits = @()
+      $my_acl = Get-ADObject -Filter * -SearchScope 2 -PipelineVariable Obj -SearchBase "CN=System,$ad_object" -Properties "DistinguishedName" | ForEach {
+                  Get-Acl -Path "Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/$Obj" -Audit  -PipelineVariable Acl | ForEach {
+                    $audits = @()
 
-                  $Acl.Audit | ForEach {
-                    If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
-                      $audits += $_
+                    $Acl.Audit | ForEach {
+                      If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
+                        $audits += $_
+                      }
+                    }
+
+                    $access = @()
+
+                    $Acl.Access | ForEach {
+                      If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
+                        $access += $_
+                      }
+                    }
+
+                    [pscustomobject]@{
+                      Path= $Acl.Path.Substring(64, $Acl.Path.Length - ($ad_object_length + 65))
+                      Group=$Acl.Group;
+                      Owner=$Acl.Owner;
+                      Audit = $audits;
+                      Access = $access
                     }
                   }
+                }  | ConvertTo-XML -As String -Depth 2 -NoTypeInformation
 
-                  $access = @()
-
-                  $Acl.Access | ForEach {
-                    If ($_.ObjectType -eq '00000000-0000-0000-0000-000000000000') {
-                      $access += $_
-                    }
-                  }
-
-                  [pscustomobject]@{
-                    Path= $Acl.Path.Substring(64, $Acl.Path.Length - ($ad_object_length + 65))
-                    Group=$Acl.Group;
-                    Owner=$Acl.Owner;
-                    Audit = $audits;
-                    Access = $access
-                  }
-                }
-              }  | ConvertTo-XML -As String -Depth 2 -NoTypeInformation
-
-              Write-Host $my_acl
-HEREDOC
+      Write-Host $my_acl
+    HEREDOC
   end
 
   def set_acl
