@@ -122,7 +122,15 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
                     $Acl.Audit | ForEach {
                       If ($_.IsInherited -eq $false -And $_.ObjectType -eq '00000000-0000-0000-0000-000000000000' -And $_.InheritedObjectType -eq '00000000-0000-0000-0000-000000000000') {
-                        $audits += $_
+                        $new_audit = [pscustomobject]@{
+                          ActiveDirectoryRights = $_.ActiveDirectoryRights
+                          IdentityReference = $_.IdentityReference;
+                          AuditFlags = $_.AuditFlags;
+                          InheritanceType = $_.InheritanceType;
+                          IdentitySID = $_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier])
+                        }
+
+                        $audits += $new_audit
                       }
                     }
 
@@ -130,14 +138,22 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
                     $Acl.Access | ForEach {
                       If ($_.IsInherited -eq $false -And $_.ObjectType -eq '00000000-0000-0000-0000-000000000000' -And $_.InheritedObjectType -eq '00000000-0000-0000-0000-000000000000') {
-                        $access += $_
+                        $new_access = [pscustomobject]@{
+                          ActiveDirectoryRights = $_.ActiveDirectoryRights
+                          IdentityReference = $_.IdentityReference;
+                          AccessControlType = $_.AccessControlType;
+                          InheritanceType = $_.InheritanceType;
+                          IdentitySID = $_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier])
+                        }
+
+                        $access += $new_access
                       }
                     }
 
                     [pscustomobject]@{
-                      Path= $Acl.Path
-                      Group=$Acl.Group;
-                      Owner=$Acl.Owner;
+                      Path = $Acl.Path
+                      Group = $Acl.Group;
+                      Owner = $Acl.Owner;
                       Audit = $audits;
                       Access = $access
                     }
@@ -197,10 +213,9 @@ Puppet::Type.type(:ad_acl).provide(:default) do
         next if (audit.xpath("./Property[@Name='ActiveDirectoryRights']").text == '') || (audit.xpath("./Property[@Name='IsInherited']").text == 'True')
         audit_rule['ad_rights'] = audit.xpath("./Property[@Name='ActiveDirectoryRights']").text
         audit_rule['identity'] = audit.xpath("./Property[@Name='IdentityReference']").text
+        audit_rule['identity_sid'] = audit.xpath("./Property[@Name='IdentitySID']").text
         audit_rule['audit_flags'] = audit.xpath("./Property[@Name='AuditFlags']").text
         audit_rule['inheritance_type'] = audit.xpath("./Property[@Name='InheritanceType']").text
-        # audit_rule['object_type'] = audit.xpath("./Property[@Name='ObjectType']").text
-        # audit_rule['inherited_object_type'] = audit.xpath("./Property[@Name='InheritedObjectType']").text
 
         audit_rules << audit_rule
       end
@@ -212,11 +227,10 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
         next if (access.xpath("./Property[@Name='ActiveDirectoryRights']").text == '') || (access.xpath("./Property[@Name='IsInherited']").text == 'True')
         access_rule['identity'] = access.xpath("./Property[@Name='IdentityReference']").text
+        access_rule['identity_sid'] = access.xpath("./Property[@Name='IdentitySID']").text
         access_rule['ad_rights'] = access.xpath("./Property[@Name='ActiveDirectoryRights']").text
         access_rule['access_control_type'] = access.xpath("./Property[@Name='AccessControlType']").text
-        # access_rule['object_type'] = access.xpath("./Property[@Name='ObjectType']").text
         access_rule['inheritance_type'] = access.xpath("./Property[@Name='InheritanceType']").text
-        # access_rule['inherited_object_type'] = access.xpath("./Property[@Name='InheritedObjectType']").text
 
         access_rules << access_rule
       end
