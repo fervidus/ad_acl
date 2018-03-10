@@ -47,9 +47,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
       #{ad_build}
 
-      $objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
-
-      $objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+      $objSid = New-Object System.Security.Principal.SecurityIdentifier('#{audit_rule['identity_sid']}')
 
       $AccessRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
         $ActiveDirectoryRightsArray,
@@ -78,9 +76,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
       #{ad_build}
 
-      $objUser = New-Object System.Security.Principal.NTAccount('#{audit_rule['identity']}')
-
-      $objSid = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+      $objSid = New-Object System.Security.Principal.SecurityIdentifier('#{audit_rule['identity_sid']}')
 
       $AuditRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
         $ActiveDirectoryRightsArray,
