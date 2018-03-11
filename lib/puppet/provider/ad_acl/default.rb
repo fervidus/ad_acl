@@ -208,8 +208,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
         next if (audit.xpath("./Property[@Name='ActiveDirectoryRights']").text == '') || (audit.xpath("./Property[@Name='IsInherited']").text == 'True')
         audit_rule['ad_rights'] = audit.xpath("./Property[@Name='ActiveDirectoryRights']").text
-        audit_rule['identity'] = audit.xpath("./Property[@Name='IdentityReference']").text
-        audit_rule['identity_sid'] = audit.xpath("./Property[@Name='IdentitySID']").text
+        audit_rule['identity'] = audit.xpath("./Property[@Name='IdentitySID']").text
         audit_rule['audit_flags'] = audit.xpath("./Property[@Name='AuditFlags']").text
         audit_rule['inheritance_type'] = audit.xpath("./Property[@Name='InheritanceType']").text
 
@@ -222,8 +221,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
         access_rule = {}
 
         next if (access.xpath("./Property[@Name='ActiveDirectoryRights']").text == '') || (access.xpath("./Property[@Name='IsInherited']").text == 'True')
-        access_rule['identity'] = access.xpath("./Property[@Name='IdentityReference']").text
-        access_rule['identity_sid'] = access.xpath("./Property[@Name='IdentitySID']").text
+        access_rule['identity'] = access.xpath("./Property[@Name='IdentitySID']").text
         access_rule['ad_rights'] = access.xpath("./Property[@Name='ActiveDirectoryRights']").text
         access_rule['access_control_type'] = access.xpath("./Property[@Name='AccessControlType']").text
         access_rule['inheritance_type'] = access.xpath("./Property[@Name='InheritanceType']").text

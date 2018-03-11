@@ -41,21 +41,15 @@ Puppet::Type.newtype(:ad_acl) do
       end
     end
 
-    munge do |value|
-      value['identity_sid'] = value['identity']
-
-      value
-    end
-
     def insync?(is)
       is_sort = is.sort do |a, b|
         [
-          a['identity_sid'],
+          a['identity'],
           a['ad_rights'],
           a['audit_flags'],
           a['inheritance_type'],
         ] <=> [
-          b['identity_sid'],
+          b['identity'],
           b['ad_rights'],
           b['audit_flags'],
           b['inheritance_type'],
@@ -64,12 +58,12 @@ Puppet::Type.newtype(:ad_acl) do
 
       should_sort = should.sort do |a, b|
         [
-          a['identity_sid'],
+          a['identity'],
           a['ad_rights'],
           a['audit_flags'],
           a['inheritance_type'],
         ] <=> [
-          b['identity_sid'],
+          b['identity'],
           b['ad_rights'],
           b['audit_flags'],
           b['inheritance_type'],
@@ -92,21 +86,15 @@ Puppet::Type.newtype(:ad_acl) do
       end
     end
 
-    munge do |value|
-      value['identity_sid'] = value['identity']
-
-      value
-    end
-
     def insync?(is)
       is_sort = is.sort do |a, b|
         [
-          a['identity_sid'],
+          a['identity'],
           a['ad_rights'],
           a['access_control_type'],
           a['inheritance_type'],
         ] <=> [
-          b['identity_sid'],
+          b['identity'],
           b['ad_rights'],
           b['access_control_type'],
           b['inheritance_type'],
@@ -115,12 +103,12 @@ Puppet::Type.newtype(:ad_acl) do
 
       should_sort = should.sort do |a, b|
         [
-          a['identity_sid'],
+          a['identity'],
           a['ad_rights'],
           a['access_control_type'],
           a['inheritance_type'],
         ] <=> [
-          b['identity_sid'],
+          b['identity'],
           b['ad_rights'],
           b['access_control_type'],
           b['inheritance_type'],
