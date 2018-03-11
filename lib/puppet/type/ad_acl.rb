@@ -37,7 +37,7 @@ Puppet::Type.newtype(:ad_acl) do
         raise ArgumentError,
           "Audit rules currently only accept SIDs as identifiers"
       else
-        super
+        value
       end
     end
 
@@ -88,7 +88,7 @@ Puppet::Type.newtype(:ad_acl) do
         raise ArgumentError,
           "Access rules currently only accept SIDs as identifiers"
       else
-        super
+        value
       end
     end
 
