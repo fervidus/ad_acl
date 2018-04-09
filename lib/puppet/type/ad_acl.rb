@@ -5,6 +5,7 @@ Puppet::Type.newtype(:ad_acl) do
 
   newparam(:name, namevar: true) do
     desc 'The path to the object on the active directory server'
+    Puppet.debug('Jack testing namevar')
 
     munge(&:downcase)
 
@@ -15,6 +16,8 @@ Puppet::Type.newtype(:ad_acl) do
 
   newproperty(:owner) do
     desc 'The user associated with this access control list'
+    Puppet.debug('Jack testing owner')
+
 
     def insync?(is)
       is.casecmp(should.downcase).zero?
@@ -23,6 +26,8 @@ Puppet::Type.newtype(:ad_acl) do
 
   newproperty(:group) do
     desc 'The group associated with this access control list'
+    Puppet.debug('Jack testing group')
+
 
     def insync?(is)
       is.casecmp(should.downcase).zero?
@@ -31,6 +36,8 @@ Puppet::Type.newtype(:ad_acl) do
 
   newproperty(:audit_rules, array_matching: :all) do
     desc 'Audit rules associated with this acl'
+    Puppet.debug('Jack testing audit_rules')
+
 
     validate do |value|
       unless /^S-\d-(\d+-){1,14}\d+$/.match(value['identity'])
@@ -76,6 +83,8 @@ Puppet::Type.newtype(:ad_acl) do
 
   newproperty(:access_rules, array_matching: :all) do
     desc 'Access rules associated with this acl'
+    Puppet.debug('Jack testing access_rules')
+
 
     validate do |value|
       unless /^S-\d-\d+-(\d+-){1,14}\d+$/.match(value['identity'])
