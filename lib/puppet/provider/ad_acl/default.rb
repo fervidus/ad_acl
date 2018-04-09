@@ -57,13 +57,13 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
       #{ad_build}
 
-      $objSid = New-Object System.Security.Principal.SecurityIdentifier('#{audit_rule['identity_sid']}')
+      $objSid = New-Object System.Security.Principal.SecurityIdentifier('#{access_rule['identity']}')
 
       $AccessRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
         $ActiveDirectoryRightsArray,
-        [System.Security.AccessControl.AccessControlType]::$AccessControlType,
+        [System.Security.AccessControl.AccessControlType]::#{access_rule['access_control_type']},
         $objectGuidObj,
-        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::$ActiveDirectorySecurityInheritance,
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::#{access_rule['inheritance_type']},
         $inheritedObjectGuidObj)
 
       $my_acl.AddAccessRule($AccessRule)
