@@ -4,8 +4,6 @@ require 'nokogiri'
 include Nokogiri
 
 Puppet::Type.type(:ad_acl).provide(:default) do
-  Puppet.debug('Jack testing begining of provider')
-
   mk_resource_methods
 
   # windows only
@@ -21,27 +19,19 @@ Puppet::Type.type(:ad_acl).provide(:default) do
                    end
 
   def initialize(value = {})
-    Puppet.debug('Jack testing initialize')
-
     super(value)
     @property_flush = {}
   end
 
   def access_rules=(value)
-    Puppet.debug('Jack testing access_rules=(value)')
-
     @property_flush[:access_rules] = value
   end
 
   def audit_rules=(value)
-    Puppet.debug('Jack testing audit_rules(value)')
-
     @property_flush[:audit_rules] = value
   end
 
   def set_access_rule(access_rule)
-    Puppet.debug('Jack testing set_access_rule(access_rule)')
-
     # puts audit_rule
     ad_rights = access_rule['ad_rights'].to_s.split(%r{,\s*})
 
@@ -71,9 +61,6 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def set_audit_rule(audit_rule)
-    Puppet.debug('Jack testing set_audit_rule(audit_rule)')
-    Puppet.debug("Jack testing set_audit_rule(audit_rules) audit_rule: #{audit_rule}")
-
     # puts audit_rule
     ad_rights = audit_rule['ad_rights'].to_s.split(%r{,\s*})
 
@@ -101,8 +88,6 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def set_rules(rules, rule_type)
-    Puppet.debug('Jack testing set_rules')
-
     rule_builder = ''
 
     rules.each do |rule|
@@ -123,8 +108,6 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.ad_result_query
-    Puppet.debug('Jack testing selt.ad_result_query')
-
     <<-HEREDOC
 
       Import-Module ActiveDirectory
@@ -178,31 +161,19 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def set_acl
-    Puppet.debug('Jack testing set_acl')
-
     if @property_flush[:group]
-      Puppet.debug('Jack testing set_acl property_flush[:group]')
-
     end
     if @property_flush[:owner]
-      Puppet.debug('Jack testing set_acl property_flush[:owner]')
-
     end
     if @property_flush[:access_rules]
-      Puppet.debug('Jack testing set_acl property_flush[:access_rules]')
-
       ps(set_rules(@property_flush[:access_rules], 'access'))
     end
     if @property_flush[:audit_rules]
-      Puppet.debug('Jack testing set_acl property_flush[:audit_rules]')
-
       ps(set_rules(@property_flush[:audit_rules], 'audit'))
     end
   end
 
   def flush
-    Puppet.debug('Jack testing flush')
-
     set_acl
 
     # Collect the resources again once they've been changed (that way `puppet
@@ -211,8 +182,6 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.prefetch(resources)
-    Puppet.debug('Jack testing self.prefetch(resources)')
-
     instances.each do |provider|
       resource = resources[provider.name]
 
@@ -221,8 +190,6 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.process_acl_xml(result)
-    Puppet.debug('Jack testing self.process_acl_xml')
-
     # an array to store feature hashes
     acls = []
 
@@ -279,16 +246,12 @@ Puppet::Type.type(:ad_acl).provide(:default) do
   end
 
   def self.get_acl(name)
-    Puppet.debug('Jack testing self.get_acl')
-
     result = ps("Import-Module ActiveDirectory; Get-Acl -Path 'Microsoft.ActiveDirectory.Management\\ActiveDirectory:://RootDSE/#{name}' -Audit | ConvertTo-XML -As String -Depth 2 -NoTypeInformation")
 
     process_acl_xml(result)[0]
   end
 
   def self.instances
-    Puppet.debug('Jack testing self.instances')
-
     query = ad_result_query
     result = ps(query)
 
