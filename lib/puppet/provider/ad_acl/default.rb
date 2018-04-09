@@ -89,7 +89,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
       #{ad_build}
 
-      $objSid = New-Object System.Security.Principal.SecurityIdentifier('#{audit_rule['identity_sid']}')
+      $objSid = New-Object System.Security.Principal.SecurityIdentifier('#{audit_rule['identity']}')
 
       $AuditRule = New-Object System.DirectoryServices.ActiveDirectoryAuditRule($objSid,
         $ActiveDirectoryRightsArray,
