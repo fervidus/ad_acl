@@ -72,6 +72,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
   def set_audit_rule(audit_rule)
     Puppet.debug('Jack testing set_audit_rule(audit_rule)')
+    Puppet.debug("Jack testing set_audit_rule(audit_rules) audit_rule: #{audit_rule}")
 
     # puts audit_rule
     ad_rights = audit_rule['ad_rights'].to_s.split(%r{,\s*})
@@ -104,9 +105,9 @@ Puppet::Type.type(:ad_acl).provide(:default) do
 
     rule_builder = ''
 
-    rules.each do |audit_rule|
-      rule_builder << set_audit_rule(audit_rule) if rule_type == 'audit'
-      rule_builder << set_access_rule(audit_rule) if rule_type == 'access'
+    rules.each do |rule|
+      rule_builder << set_audit_rule(rule) if rule_type == 'audit'
+      rule_builder << set_access_rule(rule) if rule_type == 'access'
     end
 
     <<-HEREDOC
