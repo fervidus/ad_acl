@@ -78,7 +78,7 @@ Puppet::Type.newtype(:ad_acl) do
     desc 'Access rules associated with this acl'
 
     validate do |value|
-      unless /^S-\d-\d+-(\d+-){1,14}\d+$/.match(value['identity'])
+      unless /^S-\d+.*$/.match(value['identity'])
         raise ArgumentError,
           "Access rules currently only accept SIDs as identifiers"
       else
