@@ -4,9 +4,9 @@
   "author": "Bryan Belanger",
   "summary": "Manage active directory audit rules.",
   "license": "Apache-2.0",
-  "source": "https://github.com/autostructure/audit_rules.git",
-  "project_page": "https://github.com/autostructure/audit_rules.git",
-  "issues_url": "https://github.com/autostructure/audit_rules.git/issues",
+  "source": "https://github.com/autostructure/ad_acl.git",
+  "project_page": "https://github.com/autostructure/ad_acl.git",
+  "issues_url": "https://github.com/autostructure/ad_acl.git/issues",
   "dependencies": [
 
   ],
