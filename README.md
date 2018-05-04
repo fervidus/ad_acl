@@ -1,15 +1,11 @@
 
 # audit_rules
+[![License](https://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![Puppet Forge](https://img.shields.io/puppetforge/v/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
+[![Puppet Forge](https://img.shields.io/puppetforge/f/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
+[![Build Status](https://travis-ci.org/autostructure/ad_acl.svg?branch=master)](https://travis-ci.org/autostructure/ad_acl)
 
-Welcome to your new module. A short overview of the generated parts can be found in the PDK documentation at https://puppet.com/pdk/latest/pdk_generating_modules.html .
-
-The README template below provides a starting point with details about what information to include in your README.
-
-
-
-
-
-
+The ad_acl module supplies a audit_rules resource (via a Puppet custom type provider).
 
 #### Table of Contents
 
