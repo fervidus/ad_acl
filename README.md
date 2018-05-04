@@ -1,9 +1,10 @@
 
 # audit_rules
 [![License](https://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Puppet Forge](https://img.shields.io/puppetforge/v/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
-[![Puppet Forge](https://img.shields.io/puppetforge/f/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
 [![Build Status](https://travis-ci.org/autostructure/ad_acl.svg?branch=master)](https://travis-ci.org/autostructure/ad_acl)
+[![Puppet Forge](https://img.shields.io/puppetforge/v/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
+[![Puppet Forge Score](https://img.shields.io/puppetforge/f/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
+[![Puppet Forge Downloads](https://img.shields.io/puppetforge/dt/autostructure/ad_acl.svg)](https://forge.puppetlabs.com/autostructure/ad_acl)
 
 The ad_acl module supplies a audit_rules resource (via a Puppet custom type provider).
 
