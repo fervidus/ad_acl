@@ -1,5 +1,5 @@
 {
-  "name": "autostructure-audit_rules",
+  "name": "autostructure-ad_acl",
   "version": "1.0.0",
   "author": "Bryan Belanger",
   "summary": "Manage active directory audit rules.",
