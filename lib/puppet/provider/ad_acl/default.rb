@@ -31,7 +31,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     @property_flush[:audit_rules] = value
   end
 
-  def set_access_rule(access_rule)
+  def access_rule(access_rule)
     # puts audit_rule
     ad_rights = access_rule['ad_rights'].to_s.split(%r{,\s*})
 
@@ -60,7 +60,7 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     HEREDOC
   end
 
-  def set_audit_rule(audit_rule)
+  def audit_rule(audit_rule)
     # puts audit_rule
     ad_rights = audit_rule['ad_rights'].to_s.split(%r{,\s*})
 
@@ -165,12 +165,8 @@ Puppet::Type.type(:ad_acl).provide(:default) do
     end
     if @property_flush[:owner]
     end
-    if @property_flush[:access_rules]
-      ps(set_rules(@property_flush[:access_rules], 'access'))
-    end
-    if @property_flush[:audit_rules]
-      ps(set_rules(@property_flush[:audit_rules], 'audit'))
-    end
+    ps(set_rules(@property_flush[:access_rules], 'access')) if @property_flush[:access_rules]
+    ps(set_rules(@property_flush[:audit_rules], 'audit')) if @property_flush[:audit_rules]
   end
 
   def flush
