@@ -76,7 +76,6 @@ ad_acl { "CN=Policies,CN=System,${root_domain}":
 
 A typical ACL is made up of audit rules and access rules. They are each passed in as a hash of hashes.
 
-
 ## Reference
 
 ### Defined type: ad_acl

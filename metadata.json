@@ -1,6 +1,6 @@
 {
   "name": "autostructure-audit_rules",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Bryan Belanger",
   "summary": "Manage active directory audit rules.",
   "license": "Apache-2.0",
