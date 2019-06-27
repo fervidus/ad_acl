@@ -1,12 +1,12 @@
 {
-  "name": "autostructure-ad_acl",
+  "name": "fervid-ad_acl",
   "version": "1.0.0",
   "author": "Bryan Belanger",
   "summary": "Manage active directory audit rules.",
   "license": "Apache-2.0",
-  "source": "https://github.com/autostructure/ad_acl.git",
-  "project_page": "https://github.com/autostructure/ad_acl.git",
-  "issues_url": "https://github.com/autostructure/ad_acl.git/issues",
+  "source": "https://github.com/fervidus/ad_acl.git",
+  "project_page": "https://github.com/fervidus/ad_acl.git",
+  "issues_url": "https://github.com/fervidus/ad_acl.git/issues",
   "dependencies": [
 
   ],
@@ -25,7 +25,7 @@
       "version_requirement": ">= 4.7.0 < 6.0.0"
     }
   ],
-  "pdk-version": "1.5.0",
-  "template-url": "file:///opt/puppetlabs/pdk/share/cache/pdk-templates.git",
-  "template-ref": "1.5.0-0-gd1b3eca"
+  "pdk-version": "1.10.0",
+  "template-url": "file:///opt/puppetlabs/pdk/share/cache/pdk-templates.git#1.10.0",
+  "template-ref": "tags/1.10.0-0-gbba9ac3"
 }
